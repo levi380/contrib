@@ -15,7 +15,8 @@ const (
 	// 视讯
 	EVO      = "101" //EVO视讯
 	PP       = "102" //PP视讯
-	Habanero = "103"
+	Habanero = "103" //Habanero视讯
+	Sexy     = "104" //Sexy视讯
 
 	// 捕鱼
 	JILIFish      = "201" //JILI捕鱼
@@ -24,6 +25,7 @@ const (
 	FCFish        = "204" //FC捕鱼
 	YGRFish       = "205" //YGR捕鱼
 	YellowbatFish = "206" //Yellowbat捕鱼
+	TPGFish       = "207" //TPG捕鱼
 	// 老虎机
 	PG            = "301" //PG老虎机
 	PPSlot        = "302" //pp老虎机
@@ -52,6 +54,8 @@ const (
 	JDBPoker       = "502" //JDB棋牌
 	YellowbatPoker = "503" //Yellowbat棋牌
 	PGPoker        = "504" //PG棋牌
+	TPGPoker       = "505" //TPG棋牌
+	HabaneroPoker  = "506" //Habanero棋牌
 	//彩票
 	JILIBingo      = "701" //JILI Bingo
 	YellowbatBingo = "702" //Yellowbat Bingo

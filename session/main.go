@@ -44,7 +44,7 @@ func Set(ty int, name string, seed uint32) (string, error) {
 		pipe.Del(ctx, val)
 	}
 
-	pipe.Set(ctx, uuid, key, 168*time.Hour)
+	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
 	//pipe.ZAdd(ctx, "online", vv)
 	_, err = pipe.Exec(ctx)

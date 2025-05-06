@@ -8,10 +8,13 @@ const (
 	TransactionAdjust      = 1002 //调整
 
 	// 财务相关
-	TransactionFinanceClass   = 2000 //财务大类
-	TransactionDeposit        = 2001 //存款
-	TransactionWithdraw       = 2002 //取款
-	TransactionWithdrawCancel = 2003 //取消取款
+	TransactionFinanceClass    = 2000 //财务大类
+	TransactionDeposit         = 2001 //存款
+	TransactionWithdraw        = 2002 //取款
+	TransactionWithdrawCancel  = 2003 //取消取款
+	TransactionAdjustmentAdd   = 2004 //后台手动上分
+	TransactionAdjustmentSub   = 2005 //后台手动下分
+	TransactionAdjustmentClear = 2006 //后台手动清零
 
 	// 场馆游戏相关
 	TransactionGameClass            = 3000 //场馆大类

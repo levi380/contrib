@@ -33,7 +33,7 @@ func TOTP(k string, x uint64) int {
 	return HOTP(key, T(0, x))
 }
 
-func TOTP2(k string, x uint64) int {
+func TOTP2(k []byte, x uint64) int {
 	return HOTP(k, T(0, x))
 }
 

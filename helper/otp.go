@@ -33,6 +33,10 @@ func TOTP(k string, x uint64) int {
 	return HOTP(key, T(0, x))
 }
 
+func TOTP2(k string, x uint64) int {
+	return HOTP(k, T(0, x))
+}
+
 func HOTP(k []byte, c uint64) int {
 	return TRUNCATE(HMACSHA256(k, c))
 }

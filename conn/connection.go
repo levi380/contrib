@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
 
@@ -121,6 +122,24 @@ func InitDB(dsn string, maxIdleConn, maxOpenConn int) *sql.DB {
 	}
 
 	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	db.SetMaxOpenConns(maxOpenConn)
+	db.SetMaxIdleConns(maxIdleConn)
+	db.SetConnMaxLifetime(time.Second * 30)
+	err = db.Ping()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("mysql db.Ping err = ", err)
+	return db
+}
+
+func InitDBX(dsn string, maxIdleConn, maxOpenConn int) *sqlx.DB {
+
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		log.Fatalln(err)
 	}

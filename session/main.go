@@ -23,7 +23,7 @@ func New(reddb *redis.Client) {
 
 	rr = frand.New()
 	client = reddb
-	expires[0] = time.Duration(5) * time.Minute
+	expires[0] = time.Duration(30) * time.Minute
 	expires[1] = time.Duration(30) * time.Minute
 }
 

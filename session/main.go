@@ -46,6 +46,11 @@ func Set(ty int, name string, seed uint32) (string, error) {
 
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
+	if ty == 0 {
+		pipe.HSet(ctx, "online", name, "1")
+		pipe.HExpire(ctx, "online", expires[ty], name)
+	}
+
 	//pipe.ZAdd(ctx, "online", vv)
 	_, err = pipe.Exec(ctx)
 
@@ -60,8 +65,12 @@ func Offline(uids string) error {
 		return err
 	}
 
-	err = client.Unlink(ctx, sid, uuid).Err()
-	return err
+	pipe := client.Pipeline()
+
+	pipe.Unlink(ctx, sid, uuid)
+	pipe.HDel(ctx, "online", sid)
+	pipe.Exec(ctx)
+	return nil
 }
 
 func Get(fctx *fasthttp.RequestCtx) ([]byte, error) {
@@ -92,8 +101,20 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 		}
 	}
 
-	return client.ExpireXX(ctx, key, expires[ty]).Err()
+	uid, err := client.Get(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+
+	pipe := client.Pipeline()
+	pipe.ExpireXX(ctx, key, expires[ty])
+	pipe.HExpire(ctx, "online", expires[ty], uid)
+	pipe.Exec(ctx)
+
+	return nil
 }
+
+/*
 
 func AdminSet(value []byte, uid string) (string, error) {
 
@@ -127,3 +148,4 @@ func AdminGet(fctx *fasthttp.RequestCtx) ([]byte, error) {
 
 	return client.Get(ctx, key).Bytes()
 }
+*/

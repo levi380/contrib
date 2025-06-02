@@ -1,17 +1,26 @@
 package helper
 
-/* 
+import (
+	"fmt"
+	"strconv"
+
+	"lukechampine.com/frand"
+)
+
+/*
 #include <mach/mach_time.h>
 C.mach_absolute_time()
 */
 
+func Now(physical bool) uint64
 
-import (
-	"time"
-)
+func Cputicks() uint64 {
 
-func Cputicks() (t uint64) {
+	val := fmt.Sprintf("%d%d", Now(true), 100+frand.Intn(900))
 
-	sec := time.Now().UnixNano() / 1e6
-	return uint64(sec)
+	t, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return t
 }

@@ -114,8 +114,6 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 	return nil
 }
 
-/*
-
 func AdminSet(value []byte, uid string) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", uid)
@@ -129,13 +127,14 @@ func AdminSet(value []byte, uid string) (string, error) {
 		//同一个用户，一个时间段，只能登录一个
 		pipe.Unlink(ctx, val)
 	}
-	pipe.Set(ctx, uuid, key, time.Duration(100)*time.Hour)
-	pipe.Set(ctx, key, value, time.Duration(4320)*time.Minute)
+	pipe.Set(ctx, uuid, key, expires[1])
+	pipe.Set(ctx, key, value, expires[1])
 	_, err = pipe.Exec(ctx)
 
 	return key, err
 }
 
+/*
 func AdminGet(fctx *fasthttp.RequestCtx) ([]byte, error) {
 
 	key := string(fctx.Request.Header.Peek("t"))

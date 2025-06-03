@@ -47,8 +47,8 @@ func Set(ty int, name string, seed uint32) (string, error) {
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
 	if ty == 0 {
-		pipe.HSet(ctx, "online", name, "1")
-		pipe.HExpire(ctx, "online", expires[ty], name)
+		pipe.HSet(ctx, "online_member", name, "1")
+		pipe.HExpire(ctx, "online_member", expires[ty], name)
 	}
 
 	//pipe.ZAdd(ctx, "online", vv)
@@ -68,7 +68,7 @@ func Offline(uids string) error {
 	pipe := client.Pipeline()
 
 	pipe.Unlink(ctx, sid, uuid)
-	pipe.HDel(ctx, "online", sid)
+	pipe.HDel(ctx, "online_member", sid)
 	pipe.Exec(ctx)
 	return nil
 }
@@ -108,7 +108,7 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 
 	pipe := client.Pipeline()
 	pipe.ExpireXX(ctx, key, expires[ty])
-	pipe.HExpire(ctx, "online", expires[ty], uid)
+	pipe.HExpire(ctx, "online_member", expires[ty], uid)
 	pipe.Exec(ctx)
 
 	return nil

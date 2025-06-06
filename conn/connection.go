@@ -225,6 +225,7 @@ func InitRedisSentinel(dsn []string, psd, name string, db, poolSize int) *redis.
 		//MaxActiveConns:        20,
 		ConnMaxLifetime:       5 * time.Minute,
 		ContextTimeoutEnabled: false,
+		UnstableResp3: true,
 	})
 	pong, err := reddb.Ping(ctx).Result()
 	if err != nil {

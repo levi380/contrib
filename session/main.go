@@ -69,6 +69,7 @@ func Offline(uids string) error {
 
 	pipe.Unlink(ctx, sid, uuid)
 	pipe.HDel(ctx, "online_member", sid)
+	pipe.Del(ctx, "onlines:"+sid)
 	pipe.Exec(ctx)
 	return nil
 }
@@ -109,6 +110,7 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 	pipe := client.Pipeline()
 	pipe.ExpireXX(ctx, key, expires[ty])
 	pipe.HExpire(ctx, "online_member", expires[ty], uid)
+	pipe.ExpireXX(ctx, "onlines:"+uid, expires[ty])
 	pipe.Exec(ctx)
 
 	return nil

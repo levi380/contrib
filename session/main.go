@@ -27,7 +27,7 @@ func New(reddb *redis.Client) {
 	expires[1] = time.Duration(30) * time.Minute
 }
 
-func Set(ty int, name string, seed uint32) (string, error) {
+func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, seed uint32) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", name)
 
@@ -35,6 +35,9 @@ func Set(ty int, name string, seed uint32) (string, error) {
 	val, err := client.Get(ctx, uuid).Result()
 
 	key = prefix + key
+
+	day := fctx.Time().In(loc).Format("01-02")
+	ckey := fmt.Sprintf("%s-member-login", day)
 
 	//ex := fmt.Sprintf("%d", ts.Unix())
 	pipe := client.Pipeline()
@@ -44,6 +47,8 @@ func Set(ty int, name string, seed uint32) (string, error) {
 		pipe.Del(ctx, val)
 	}
 
+	pipe.SAdd(ctx, ckey, name)
+	pipe.ExpireXX(ctx, ckey, time.Duration(24)*time.Hour)
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
 	if ty == 0 {

@@ -47,7 +47,7 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 		pipe.Del(ctx, val)
 	}
 
-	pipe.SAdd(ctx, ckey, name)
+	pipe.PFAdd(ctx, ckey, name)
 	pipe.ExpireXX(ctx, ckey, time.Duration(24)*time.Hour)
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])

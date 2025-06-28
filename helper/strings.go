@@ -1,8 +1,6 @@
 package helper
 
 import (
-	"fmt"
-
 	"github.com/fxamacker/cbor/v2"
 	"github.com/valyala/fasthttp"
 	"lukechampine.com/frand"
@@ -54,6 +52,7 @@ func Echo(fctx *fasthttp.RequestCtx, status bool, data any) {
 	fctx.SetBody(b)
 }
 
+/*
 func GenId() string {
 
 	var min uint64 = 0
@@ -70,6 +69,7 @@ func GenLongId() string {
 	id := fmt.Sprintf("%d%d", Cputicks(), frand.Uint64n(max-min)+min)
 	return id[0:18]
 }
+*/
 
 func RandomKey(length int) string {
 

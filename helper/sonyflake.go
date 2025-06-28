@@ -12,11 +12,7 @@ var sf *sonyflake.Sonyflake
 
 func init() {
 	var err error
-	st := sonyflake.Settings{
-		MachineID: func() (int, error) {
-			return os.Getpid(), nil
-		},
-	}
+	st := sonyflake.Settings{}
 
 	sf, err = sonyflake.New(st) // 使用默认设置
 	if err != nil {

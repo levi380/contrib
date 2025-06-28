@@ -3,7 +3,6 @@ package helper
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/sony/sonyflake/v2"
 )

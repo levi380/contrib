@@ -16,7 +16,7 @@ var (
 	rr      *frand.RNG
 	ctx     = context.Background()
 	client  *redis.Client
-	expires [2]time.Duration
+	expires [3]time.Duration
 )
 
 func New(reddb *redis.Client) {
@@ -25,6 +25,7 @@ func New(reddb *redis.Client) {
 	client = reddb
 	expires[0] = time.Duration(30) * time.Minute
 	expires[1] = time.Duration(30) * time.Minute
+	expires[2] = time.Duration(3) * time.Hour
 }
 
 func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, seed uint32) (string, error) {
@@ -51,11 +52,12 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 	pipe.ExpireXX(ctx, ckey, time.Duration(48)*time.Hour)
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
+	/*
 	if ty == 0 {
 		pipe.HSet(ctx, "online_member", name, "1")
 		pipe.HExpire(ctx, "online_member", expires[ty], name)
 	}
-
+	*/
 	//pipe.ZAdd(ctx, "online", vv)
 	_, err = pipe.Exec(ctx)
 
@@ -73,7 +75,7 @@ func Offline(uids string) error {
 	pipe := client.Pipeline()
 
 	pipe.Unlink(ctx, sid, uuid)
-	pipe.HDel(ctx, "online_member", sid)
+	//pipe.HDel(ctx, "online_member", sid)
 	pipe.Del(ctx, "onlines:"+sid)
 	pipe.Exec(ctx)
 	return nil
@@ -114,7 +116,7 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 
 	pipe := client.Pipeline()
 	pipe.ExpireXX(ctx, key, expires[ty])
-	pipe.HExpire(ctx, "online_member", expires[ty], uid)
+	//pipe.HExpire(ctx, "online_member", expires[ty], uid)
 	pipe.ExpireXX(ctx, "onlines:"+uid, expires[ty])
 	pipe.Exec(ctx)
 

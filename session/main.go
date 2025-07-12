@@ -25,7 +25,7 @@ func New(reddb *redis.Client) {
 	client = reddb
 	expires[0] = time.Duration(30) * time.Minute
 	expires[1] = time.Duration(30) * time.Minute
-	expires[2] = time.Duration(3) * time.Hour
+	expires[2] = time.Duration(72) * time.Hour
 }
 
 func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, seed uint32) (string, error) {

@@ -127,7 +127,7 @@ func InitRedis(dsn string, passwd string, db,poolSize int) *redis.Client {
 	reddb := redis.NewClient(&redis.Options{
 		Addr: dsn,
 		//Username: "user",
-		DB ：db,
+		DB : db,
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,

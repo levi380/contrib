@@ -122,11 +122,12 @@ func InitRedisSentinel(dsn []string, username, psd, name string, db, poolSize in
 	return reddb
 }
 
-func InitRedis(dsn string, passwd string, poolSize int) *redis.Client {
+func InitRedis(dsn string, passwd string, db,poolSize int) *redis.Client {
 
 	reddb := redis.NewClient(&redis.Options{
 		Addr: dsn,
 		//Username: "user",
+		DB ：db,
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,

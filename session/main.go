@@ -76,7 +76,7 @@ func Offline(uids string) error {
 
 	pipe.Unlink(ctx, sid, uuid)
 	//pipe.HDel(ctx, "online_member", sid)
-	pipe.Del(ctx, "onlines:"+sid)
+	pipe.Del(ctx, "onlines:"+uids)
 	pipe.Exec(ctx)
 	return nil
 }

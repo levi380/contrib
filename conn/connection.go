@@ -122,12 +122,12 @@ func InitRedisSentinel(dsn []string, username, psd, name string, db, poolSize in
 	return reddb
 }
 
-func InitRedis(dsn string, passwd string, db,poolSize int) *redis.Client {
+func InitRedis(dsn string, passwd string, db, poolSize int) *redis.Client {
 
 	reddb := redis.NewClient(&redis.Options{
 		Addr: dsn,
 		//Username: "user",
-		DB : db,
+		DB:           db,
 		DialTimeout:  10 * time.Second,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -147,4 +147,27 @@ func InitRedis(dsn string, passwd string, db,poolSize int) *redis.Client {
 	fmt.Println(pong, err)
 
 	return reddb
+}
+
+func InitRedisCluster(dsn []string, passwd string, db, poolSize int) *redis.ClusterClient {
+	cluster := redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:                 dsn,
+		Password:              passwd,
+		DialTimeout:           10 * time.Second,
+		ReadTimeout:           30 * time.Second,
+		WriteTimeout:          30 * time.Second,
+		PoolSize:              poolSize,
+		PoolTimeout:           30 * time.Second,
+		MaxRetries:            2,
+		MaxIdleConns:          20,
+		ConnMaxLifetime:       5 * time.Minute,
+		ContextTimeoutEnabled: false,
+	})
+	pong, err := cluster.Ping(ctx).Result()
+	if err != nil {
+		log.Fatalf("InitRedisCluster failed: %s", err.Error())
+	}
+	fmt.Println(pong, err)
+
+	return cluster
 }

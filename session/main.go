@@ -30,7 +30,9 @@ func New(reddb *redis.Client) {
 
 func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, seed uint32) (string, error) {
 
-	uuid := fmt.Sprintf("TI:%s", name)
+	device := string(fctx.Request.Header.Peek("d"))
+
+	uuid := fmt.Sprintf("T:%s:%s", name, device)
 
 	key := fmt.Sprintf("%x", rr.Entropy128())
 	val, err := client.Get(ctx, uuid).Result()
@@ -53,10 +55,10 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 	pipe.Set(ctx, uuid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
 	/*
-	if ty == 0 {
-		pipe.HSet(ctx, "online_member", name, "1")
-		pipe.HExpire(ctx, "online_member", expires[ty], name)
-	}
+		if ty == 0 {
+			pipe.HSet(ctx, "online_member", name, "1")
+			pipe.HExpire(ctx, "online_member", expires[ty], name)
+		}
 	*/
 	//pipe.ZAdd(ctx, "online", vv)
 	_, err = pipe.Exec(ctx)
@@ -64,20 +66,48 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 	return key, err
 }
 
-func Offline(uids string) error {
+func Offline(uid string) error {
 
-	uuid := fmt.Sprintf("TI:%s", uids)
-	sid, err := client.Get(ctx, uuid).Result()
-	if err != nil {
-		return err
+	keys := []string{}
+
+	uuid := fmt.Sprintf("T:%s", uid)
+
+	pipe1 := client.Pipeline()
+	uuid24_temp := pipe1.Get(ctx, uuid+":24")
+	uuid25_temp := pipe1.Get(ctx, uuid+":25")
+	uuid26_temp := pipe1.Get(ctx, uuid+":26")
+	uuid27_temp := pipe1.Get(ctx, uuid+":27")
+	uuid28_temp := pipe1.Get(ctx, uuid+":28")
+
+	pipe1.Exec(ctx)
+	uuid24, err24 := uuid24_temp.Result()
+	if err24 == nil {
+		keys = append(keys, uuid24)
+	}
+	uuid25, err25 := uuid25_temp.Result()
+	if err25 == nil {
+		keys = append(keys, uuid25)
+	}
+	uuid26, err26 := uuid26_temp.Result()
+	if err26 == nil {
+		keys = append(keys, uuid26)
+	}
+	uuid27, err27 := uuid27_temp.Result()
+	if err27 == nil {
+		keys = append(keys, uuid27)
+	}
+	uuid28, err28 := uuid28_temp.Result()
+	if err28 == nil {
+		keys = append(keys, uuid28)
 	}
 
-	pipe := client.Pipeline()
-
-	pipe.Unlink(ctx, sid, uuid)
+	pipe2 := client.Pipeline()
+	for _, key := range keys {
+		pipe2.Unlink(ctx, key)
+	}
 	//pipe.HDel(ctx, "online_member", sid)
-	pipe.Del(ctx, "onlines:"+uids)
-	pipe.Exec(ctx)
+	pipe2.Del(ctx, "onlines:"+uid)
+	pipe2.Exec(ctx)
 	return nil
 }
 

@@ -162,6 +162,7 @@ func InitRedisCluster(dsn []string, passwd string, db, poolSize int) *redis.Clus
 		MaxIdleConns:          20,
 		ConnMaxLifetime:       5 * time.Minute,
 		ContextTimeoutEnabled: false,
+		UnstableResp3:         true,
 	})
 	pong, err := cluster.Ping(ctx).Result()
 	if err != nil {

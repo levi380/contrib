@@ -24,7 +24,7 @@ func New(addr string, maxIdle, maxActive int, dialTimeout time.Duration) {
 	destructor := func(value *beanstalk.Conn) {
 		value.Close()
 	}
-	maxPoolSize := int32(10)
+	maxPoolSize := int32(maxIdle)
 
 	pool, err = puddle.NewPool(&puddle.Config[*beanstalk.Conn]{Constructor: constructor, Destructor: destructor, MaxSize: maxPoolSize})
 	if err != nil {

@@ -23,9 +23,9 @@ func New(reddb *redis.ClusterClient) {
 
 	rr = frand.New()
 	client = reddb
-	expires[0] = time.Duration(30) * time.Minute
+	expires[0] = time.Duration(8) * time.Hour
 	expires[1] = time.Duration(30) * time.Minute
-	expires[2] = time.Duration(72) * time.Hour
+	expires[2] = time.Duration(14*24) * time.Hour
 }
 
 func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, seed uint32) (string, error) {

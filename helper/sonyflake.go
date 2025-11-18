@@ -1,31 +1,64 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
-	"log"
+	"net"
 
-	"github.com/sony/sonyflake/v2"
+	"github.com/sony/sonyflake/v2/types"
+	"github.com/yitter/idgenerator-go/idgen"
 )
 
-var sf *sonyflake.Sonyflake
+func isPrivateIPv4(ip net.IP) bool {
+	// Allow private IP addresses (RFC1918) and link-local addresses (RFC3927)
+	return ip != nil &&
+		(ip[0] == 10 || ip[0] == 172 && (ip[1] >= 16 && ip[1] < 32) || ip[0] == 192 && ip[1] == 168 || ip[0] == 169 && ip[1] == 254)
+}
+
+func privateIPv4(interfaceAddrs types.InterfaceAddrs) (net.IP, error) {
+	as, err := interfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, a := range as {
+		ipnet, ok := a.(*net.IPNet)
+		if !ok || ipnet.IP.IsLoopback() {
+			continue
+		}
+
+		ip := ipnet.IP.To4()
+		if isPrivateIPv4(ip) {
+			return ip, nil
+		}
+	}
+	return nil, errors.New("no private ip address")
+}
+
+func lower16BitPrivateIP(interfaceAddrs types.InterfaceAddrs) (int, error) {
+	ip, err := privateIPv4(interfaceAddrs)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(ip[2])<<8 + int(ip[3]), nil
+}
 
 func init() {
-	var err error
-	st := sonyflake.Settings{}
 
-	sf, err = sonyflake.New(st) // 使用默认设置
+	workid, err := lower16BitPrivateIP(net.InterfaceAddrs)
 	if err != nil {
-		log.Fatalf("failed to create sonyflake: %v", err)
+		panic(err)
 	}
+
+	var options = idgen.NewIdGeneratorOptions(uint16(workid))
+	options.WorkerIdBitLength = 13
+	idgen.SetIdGenerator(options)
 }
 
 func GenId() string {
 
-	id, err := sf.NextID()
-	if err != nil {
-		fmt.Println("GenId NextID err = ", err)
-		return fmt.Sprintf("%d", Cputicks())
-	}
+	id := idgen.NextId()
 
 	return fmt.Sprintf("%d", id)
 }

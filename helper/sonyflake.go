@@ -52,7 +52,7 @@ func init() {
 	}
 
 	var options = idgen.NewIdGeneratorOptions(uint16(workid))
-	options.WorkerIdBitLength = 13
+	options.WorkerIdBitLength = 15
 	idgen.SetIdGenerator(options)
 }
 

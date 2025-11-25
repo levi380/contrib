@@ -6,10 +6,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/yitter/idgenerator-go/idgen"
+	"github.com/sony/sonyflake/v2"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
+
+var sf *sonyflake.Sonyflake
 
 func Initial(endpoints []string) {
 
@@ -44,14 +46,22 @@ func Initial(endpoints []string) {
 		}
 	}
 
-	var options = idgen.NewIdGeneratorOptions(uint16(workId))
-	options.WorkerIdBitLength = 12
-	idgen.SetIdGenerator(options)
+
+	st := sonyflake.Settings{}
+	st.MachineID = workId
+	sf, err = sonyflake.New(st) // 使用默认设置
+	if err != nil {
+		log.Fatalf("failed to create sonyflake: %v", err)
+	}
 }
 
 func GenId() string {
 
-	id := idgen.NextId()
+	id, err := sf.NextID()
+	if err != nil {
+		fmt.Println("GenId NextID err = ", err)
+		return fmt.Sprintf("%d", Cputicks())
+	}
 
 	return fmt.Sprintf("%d", id)
 }

@@ -48,7 +48,9 @@ func Initial(endpoints []string) {
 
 
 	st := sonyflake.Settings{}
-	st.MachineID = workId
+	st.MachineID = func() (int, error) {
+            return workId, nil 
+    }
 	sf, err = sonyflake.New(st) // 使用默认设置
 	if err != nil {
 		log.Fatalf("failed to create sonyflake: %v", err)

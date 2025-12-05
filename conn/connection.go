@@ -139,6 +139,7 @@ func InitRedis(dsn string, passwd string, db, poolSize int) *redis.Client {
 		ConnMaxLifetime:       5 * time.Minute,
 		ContextTimeoutEnabled: false,
 		Password:              passwd,
+		UnstableResp3:         true,
 	})
 	pong, err := reddb.Ping(ctx).Result()
 	if err != nil {

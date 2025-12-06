@@ -46,7 +46,7 @@ func Initial(endpoints []string) {
 		}
 	}
 
-    snowflake.SetMachineID(workId)
+    snowflake.SetMachineID(uint16(workId))
 }
 
 func GenId() string {

@@ -37,6 +37,7 @@ func Echo(fctx *fasthttp.RequestCtx, status bool, data any) {
 	)
 	fctx.SetContentType("plain/text")
 	fctx.SetStatusCode(200)
+	fctx.Response.Header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	res := Response{
 		Status: status,
 		Data:   data,

@@ -6,12 +6,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/godruoyi/go-snowflake"
+	"github.com/sony/sonyflake/v2"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/client/v3/concurrency"
 )
 
-
+var sf *sonyflake.Sonyflake
 
 func Initial(endpoints []string) {
 
@@ -46,12 +46,24 @@ func Initial(endpoints []string) {
 		}
 	}
 
-    snowflake.SetMachineID(uint16(workId))
+
+	st := sonyflake.Settings{}
+	st.MachineID = func() (int, error) {
+            return workId, nil 
+    }
+	sf, err = sonyflake.New(st) // 使用默认设置
+	if err != nil {
+		log.Fatalf("failed to create sonyflake: %v", err)
+	}
 }
 
 func GenId() string {
 
-	id := snowflake.ID()
+	id, err := sf.NextID()
+	if err != nil {
+		fmt.Println("GenId NextID err = ", err)
+		return fmt.Sprintf("%d", Cputicks())
+	}
 
 	return fmt.Sprintf("%d", id)
 }

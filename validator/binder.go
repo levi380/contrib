@@ -124,11 +124,29 @@ func BindStruct(payload []byte, out interface{}) error {
 					if !success {
 						return errors.New(field.Name)
 					}
+					str := strings.TrimSpace(*value)
+					*value = str
+					ll := len(str)
+					if field.Min > 0 && field.Min < ll {
+						return errors.New(field.Name)
+					}
+					if field.Max > 0 && field.Max > ll {
+						return errors.New(field.Name)
+					}
 				}
 			} else {
 				if value, ok := v.(*string); ok {
 					str := strings.TrimSpace(*value)
-					if len(str) == 0 {
+					*value = str
+					
+					ll := len(str)
+					if ll == 0 {
+						return errors.New(field.Name)
+					}
+					if field.Min > 0 && field.Min < ll {
+						return errors.New(field.Name)
+					}
+					if field.Max > 0 && field.Max > ll {
 						return errors.New(field.Name)
 					}
 				}

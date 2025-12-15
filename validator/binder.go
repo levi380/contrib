@@ -63,10 +63,27 @@ func getStructFields(typ reflect2.Type) []FieldInfo {
 		fields[i] = FieldInfo{
 			Rule: field.Tag().Get("rule"),
 			Name: field.Tag().Get("json"),
+			Min : 0,
+			Max : 0,
 			//Name:     strings.ToLower(field.Name()),
 			Required: field.Tag().Get("required") == "true",
 			Type:     field.Type(),
 			Index:    []int{i}, // 存储字段的索引
+		}
+
+		if minStr := field.Tag().Get("min"); minStr != "" {
+			if minVal, err := strconv.Atoi(minStr); err == nil {
+				fields[i].Min = minVal
+			}
+			// 如果解析失败，info.Min 保持为 0
+		}
+
+		// 解析 max 标签
+		if maxStr := field.Tag().Get("max"); maxStr != "" {
+			if maxVal, err := strconv.Atoi(maxStr); err == nil {
+				fields[i].Max = maxVal
+			}
+			// 如果解析失败，info.Max 保持为 0
 		}
 
 		if fields[i].Rule == "enum" {

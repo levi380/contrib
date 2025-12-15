@@ -39,6 +39,8 @@ var (
 type FieldInfo struct {
 	Name     string
 	Rule     string
+	Min      int
+	Max      int
 	Field    []string
 	Required bool
 	Type     reflect2.Type

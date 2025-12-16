@@ -19,6 +19,7 @@ type spec func(str string) bool
 var (
 	structCache sync.Map // 用于缓存结构体字段信息
 	specFunc    = map[string]spec{
+		"ip": CtypeIp,
 		"url":   CtypeUrl,   // 验证网址格式
 		"mail":  CtypeMail,  // 验证邮件格式
 		"punct": CtypePunct, // 验证是否有标点符号

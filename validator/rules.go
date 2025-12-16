@@ -2,6 +2,7 @@ package validator
 
 import (
 	//"fmt"
+	"net"
 	"net/mail"
 	"net/url"
 	"time"
@@ -41,6 +42,16 @@ func isAlpha(r rune) bool {
 		return true
 	}
 	return false
+}
+
+func CtypeIp(str string) bool {
+	// net.ParseIP 尝试解析 IP 字符串
+	// 如果解析成功，则返回一个非 nil 的 net.IP 类型值
+	// 如果解析失败，则返回 nil
+	ip := net.ParseIP(str)
+	
+	// 如果 ip 不为 nil，则表示解析成功，是一个有效的 IP 地址
+	return ip != nil
 }
 
 func CtypeUrl(str string) bool {

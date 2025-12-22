@@ -35,7 +35,7 @@ func Echo(fctx *fasthttp.RequestCtx, status bool, data any) {
 		b   []byte
 		err error
 	)
-	fctx.SetContentType("plain/text")
+	fctx.SetContentType("application/x-protobuf")
 	fctx.SetStatusCode(200)
 	fctx.Response.Header.Set("Pragma", "no-cache")
 	fctx.Response.Header.Set("Expires", "0")

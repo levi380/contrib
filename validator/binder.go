@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"unsafe"
-	"strconv"
+
 	"github.com/fxamacker/cbor/v2"
 	"github.com/modern-go/reflect2"
 	"github.com/valyala/fasthttp"
@@ -19,7 +20,8 @@ type spec func(str string) bool
 var (
 	structCache sync.Map // 用于缓存结构体字段信息
 	specFunc    = map[string]spec{
-		"ip": CtypeIp,
+		"ip":    CtypeIp,
+		"json":  CtypeJson,  // 验证 JSON 格式
 		"url":   CtypeUrl,   // 验证网址格式
 		"mail":  CtypeMail,  // 验证邮件格式
 		"punct": CtypePunct, // 验证是否有标点符号
@@ -64,8 +66,8 @@ func getStructFields(typ reflect2.Type) []FieldInfo {
 		fields[i] = FieldInfo{
 			Rule: field.Tag().Get("rule"),
 			Name: field.Tag().Get("json"),
-			Min : 0,
-			Max : 0,
+			Min:  0,
+			Max:  0,
 			//Name:     strings.ToLower(field.Name()),
 			Required: field.Tag().Get("required") == "true",
 			Type:     field.Type(),
@@ -139,7 +141,7 @@ func BindStruct(payload []byte, out interface{}) error {
 				if value, ok := v.(*string); ok {
 					str := strings.TrimSpace(*value)
 					*value = str
-					
+
 					ll := len(str)
 					if ll == 0 {
 						return errors.New(field.Name)

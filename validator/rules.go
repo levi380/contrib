@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 	"unicode"
+
+	"github.com/valyala/fastjson"
 )
 
 // IsValidPhilippinesBankCard 检查是否为有效的菲律宾银行卡号码
@@ -44,12 +46,18 @@ func isAlpha(r rune) bool {
 	return false
 }
 
+func CtypeJson(str string) bool {
+
+	err := fastjson.Validate(str)
+	return err == nil
+}
+
 func CtypeIp(str string) bool {
 	// net.ParseIP 尝试解析 IP 字符串
 	// 如果解析成功，则返回一个非 nil 的 net.IP 类型值
 	// 如果解析失败，则返回 nil
 	ip := net.ParseIP(str)
-	
+
 	// 如果 ip 不为 nil，则表示解析成功，是一个有效的 IP 地址
 	return ip != nil
 }

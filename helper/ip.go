@@ -110,6 +110,15 @@ func isPrivateAddress(address string) (bool, error) {
 
 // FromRequest returns client's real public IP address from http request headers.
 func FromRequest(ctx *fasthttp.RequestCtx) string {
+
+	cfip := ctx.Request.Header.Peek("CF-Connecting-IP")
+	if cfip != nil {
+		return string(cfip)
+	}
+	xri := ctx.Request.Header.Peek("X-Real-IP")
+	if xri != nil {
+		return string(xri)
+	}
 	/*
 			  	xClientIP := ctx.Request.Header.Peek(xClientIPHeader)
 				if xClientIP != nil {

@@ -19,9 +19,6 @@ var xForwardedHeader = http.CanonicalHeaderKey("X-Forwarded-For")
 var forwardedForHeader = http.CanonicalHeaderKey("Forwarded-For")
 var forwardedHeader = http.CanonicalHeaderKey("Forwarded")
 
-// Standard headers used by Amazon EC2, Heroku, and others
-var xClientIPHeader = http.CanonicalHeaderKey("X-Forwarded-For")
-
 // Nginx proxy/FastCGI
 var xRealIPHeader = http.CanonicalHeaderKey("X-Real-IP")
 
@@ -101,7 +98,7 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 		return string(xri)
 
 	}
-	xForwardedFor := ctx.Request.Header.Peek(xForwardedForHeader)
+	xForwardedFor := ctx.Request.Header.Peek("X-Forwarded-For")
 	if xForwardedFor != nil {
 		requestIP, err := retrieveForwardedIP(string(xForwardedFor))
 		if err == nil {

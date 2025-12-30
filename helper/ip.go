@@ -68,25 +68,6 @@ func IsIP(address string) bool {
 	return IsIPv4(address) || IsIPv6(address)
 }
 
-func init() {
-	maxCidrBlocks := []string{
-		"127.0.0.1/8",    // localhost
-		"10.0.0.0/8",     // 24-bit block
-		"172.16.0.0/12",  // 20-bit block
-		"192.168.0.0/16", // 16-bit block
-		"169.254.0.0/16", // link local address
-		"::1/128",        // localhost IPv6
-		"fc00::/7",       // unique local address IPv6
-		"fe80::/10",      // link local address IPv6
-	}
-
-	cidrs = make([]*net.IPNet, len(maxCidrBlocks))
-	for i, maxCidrBlock := range maxCidrBlocks {
-		_, cidr, _ := net.ParseCIDR(maxCidrBlock)
-		cidrs[i] = cidr
-	}
-}
-
 // isLocalAddress works by checking if the address is under private CIDR blocks.
 // List of private CIDR blocks can be seen on :
 //
@@ -118,23 +99,26 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 	xri := ctx.Request.Header.Peek("X-Real-IP")
 	if xri != nil {
 		return string(xri)
+
+	}
+	xForwardedFor := ctx.Request.Header.Peek(xForwardedForHeader)
+	if xForwardedFor != nil {
+		requestIP, err := retrieveForwardedIP(string(xForwardedFor))
+		if err == nil {
+			return requestIP
+		}
 	}
 	/*
-			  	xClientIP := ctx.Request.Header.Peek(xClientIPHeader)
-				if xClientIP != nil {
-					return string(xClientIP)
+			if ip, err := fromForwardedHeaders(ctx); err == nil {
+
+				requestIP, err := retrieveForwardedIP(ip)
+				if err == nil {
+					return requestIP
 				}
+				//return ip
+			}
 
-				xForwardedFor := ctx.Request.Header.Peek(xForwardedForHeader)
-				if xForwardedFor != nil {
-					requestIP, err := retrieveForwardedIP(string(xForwardedFor))
-					if err == nil {
-						return requestIP
-					}
-				}
-
-
-		if ip, err := fromForwardedHeaders(ctx); err == nil {
+		if ip, err := fromSpecialHeaders(ctx); err == nil {
 
 			requestIP, err := retrieveForwardedIP(ip)
 			if err == nil {
@@ -143,15 +127,6 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 			//return ip
 		}
 	*/
-	if ip, err := fromSpecialHeaders(ctx); err == nil {
-
-		requestIP, err := retrieveForwardedIP(ip)
-		if err == nil {
-			return requestIP
-		}
-		//return ip
-	}
-
 	var remoteIP string
 	remoteAddr := ctx.RemoteAddr().String()
 

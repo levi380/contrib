@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode/utf8"
 	"unsafe"
 
 	"github.com/fxamacker/cbor/v2"
@@ -91,6 +92,7 @@ func getStructFields(typ reflect2.Type) []FieldInfo {
 
 		if fields[i].Rule == "enum" {
 			fields[i].Field = strings.Split(field.Tag().Get("field"), ",")
+			//fmt.Printf("enum %d = %+v\n", i, fields[i].Field)
 		}
 	}
 
@@ -116,42 +118,52 @@ func BindStruct(payload []byte, out interface{}) error {
 	fields := getStructFields(userType)
 	for _, field := range fields {
 
-		fieldType := userType.(reflect2.StructType).FieldByIndex(field.Index)
+		//fieldType := userType.(reflect2.StructType).FieldByIndex(field.Index)
+		fieldType := structType.FieldByIndex(field.Index)
+		fieldValPtr := fieldType.UnsafeGet(outPtr)
 
-		if field.Required && field.Type.Kind() == reflect.String {
+		if field.Type.Kind() == reflect.String {
 			v := fieldType.Get(structType.PackEFace(outPtr))
+
+			valPtr := (*string)(fieldValPtr)
+			strVal := *valPtr
+			trimmedVal := strings.TrimSpace(strVal)
+			*valPtr = trimmedVal
+			ll := utf8.RuneCountInString(trimmedVal)
+
+			//fmt.Println("trimmedVal = ", trimmedVal, "ll =", ll)
+			if !field.Required && ll == 0 {
+				continue
+			}
 			if cb, ok := specFunc[field.Rule]; ok {
 
+				success := cb(trimmedVal)
+				if !success {
+					return errors.New(field.Name)
+				}
+				str := strings.TrimSpace(trimmedVal)
+				ll := utf8.RuneCountInString(str)
+				if field.Min > 0 && field.Min > ll {
+					return errors.New(field.Name)
+				}
+				if field.Max > 0 && field.Max < ll {
+					return errors.New(field.Name)
+				}
+			} else if field.Rule == "enum" {
 				if value, ok := v.(*string); ok {
-					success := cb(*value)
-					if !success {
-						return errors.New(field.Name)
-					}
-					str := strings.TrimSpace(*value)
-					*value = str
-					ll := len(str)
-					if field.Min > 0 && field.Min < ll {
-						return errors.New(field.Name)
-					}
-					if field.Max > 0 && field.Max > ll {
+					if !slices.Contains(field.Field, *value) {
 						return errors.New(field.Name)
 					}
 				}
 			} else {
-				if value, ok := v.(*string); ok {
-					str := strings.TrimSpace(*value)
-					*value = str
-
-					ll := len(str)
-					if ll == 0 {
-						return errors.New(field.Name)
-					}
-					if field.Min > 0 && field.Min < ll {
-						return errors.New(field.Name)
-					}
-					if field.Max > 0 && field.Max > ll {
-						return errors.New(field.Name)
-					}
+				if ll == 0 {
+					return errors.New(field.Name)
+				}
+				if field.Min > 0 && field.Min > ll {
+					return errors.New(field.Name)
+				}
+				if field.Max > 0 && field.Max < ll {
+					return errors.New(field.Name)
 				}
 			}
 		}
@@ -172,8 +184,17 @@ func Bind(args *fasthttp.Args, out interface{}) error {
 
 	for _, field := range fields {
 
+		value := string(args.Peek(field.Name))
+		trimmedVal := strings.TrimSpace(value)
+		args.Set(field.Name, trimmedVal)
+		ll := utf8.RuneCountInString(trimmedVal)
+
+		if !field.Required && ll == 0 {
+			continue
+		}
+
 		if field.Required {
-			value := string(args.Peek(field.Name))
+
 			if field.Rule == "enum" {
 				if !slices.Contains(field.Field, value) {
 					return errors.New(field.Name)
@@ -205,6 +226,14 @@ func Bind(args *fasthttp.Args, out interface{}) error {
 						if !success {
 							return errors.New(field.Name)
 						}
+					}
+					//str := strings.TrimSpace(value)
+					//ll := utf8.RuneCountInString(str)
+					if field.Min > 0 && field.Min > ll {
+						return errors.New(field.Name)
+					}
+					if field.Max > 0 && field.Max < ll {
+						return errors.New(field.Name)
 					}
 				}
 			}

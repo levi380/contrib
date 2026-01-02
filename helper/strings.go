@@ -84,19 +84,4 @@ func RandomKey(length int) string {
 	return string(id)
 }
 
-func isDigit(r rune) bool {
-	return '0' <= r && r <= '9'
-}
 
-func CtypeDigit(str string) bool {
-
-	if str == "" {
-		return false
-	}
-	for _, r := range str {
-		if !isDigit(r) {
-			return false
-		}
-	}
-	return true
-}

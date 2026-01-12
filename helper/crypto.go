@@ -15,7 +15,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/forgoer/openssl"
+	"github.com/go-think/openssl"
 	//"github.com/google/uuid"
 	//md5simd "github.com/minio/md5-simd"
 	"github.com/valyala/fasthttp"

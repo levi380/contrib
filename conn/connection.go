@@ -9,8 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/chacha20poly1305"
@@ -71,23 +69,6 @@ func InitDB(dsn string, maxIdleConn, maxOpenConn int) *sql.DB {
 	return db
 }
 
-func InitDBX(dsn string, maxIdleConn, maxOpenConn int) *sqlx.DB {
-
-	db, err := sqlx.Open("mysql", dsn)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	db.SetMaxOpenConns(maxOpenConn)
-	db.SetMaxIdleConns(maxIdleConn)
-	db.SetConnMaxLifetime(time.Second * 30)
-	err = db.Ping()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println("mysql db.Ping err = ", err)
-	return db
-}
 
 func InitRedisSentinel(dsn []string, username, psd, name string, db, poolSize int) *redis.Client {
 

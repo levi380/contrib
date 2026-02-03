@@ -177,7 +177,7 @@ func Del(fctx *fasthttp.RequestCtx) error {
 	return nil
 }
 
-func AdminSet(value []byte, uid string) (string, error) {
+func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", uid)
 	key := fmt.Sprintf("%x", rr.Entropy128())
@@ -190,8 +190,8 @@ func AdminSet(value []byte, uid string) (string, error) {
 		//同一个用户，一个时间段，只能登录一个
 		pipe.Unlink(ctx, val)
 	}
-	pipe.Set(ctx, uuid, key, expires[1])
-	pipe.Set(ctx, key, value, expires[1])
+	pipe.Set(ctx, uuid, key, ttl)
+	pipe.Set(ctx, key, value, ttl)
 	_, err = pipe.Exec(ctx)
 
 	return key, err

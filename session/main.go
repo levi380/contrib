@@ -153,6 +153,30 @@ func ExpireAt(fctx *fasthttp.RequestCtx, ty int) error {
 	return nil
 }
 
+func Del(fctx *fasthttp.RequestCtx) error {
+
+	key := string(fctx.Request.Header.Peek("t"))
+	if len(key) == 0 {
+
+		key = string(fctx.QueryArgs().Peek("t"))
+		if len(key) == 0 {
+			return errors.New("does not exist")
+		}
+	}
+
+	uid, err := client.Get(ctx, key).Result()
+	if err != nil {
+		return err
+	}
+
+	pipe := client.Pipeline()
+	pipe.Unlink(ctx, key)
+	pipe.Unlink(ctx, "onlines:"+uid)
+	pipe.Exec(ctx)
+
+	return nil
+}
+
 func AdminSet(value []byte, uid string) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", uid)

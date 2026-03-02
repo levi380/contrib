@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"net"
@@ -93,17 +94,24 @@ func FromRequest(ctx *fasthttp.RequestCtx) string {
 	if cfip != nil {
 		return string(cfip)
 	}
-	xri := ctx.Request.Header.Peek("X-Real-IP")
-	if xri != nil {
-		return string(xri)
-
+	alip := ctx.Request.Header.Peek("Ali-Cdn-Real-Ip")
+	if alip != nil {
+		return string(alip)
 	}
-	xForwardedFor := ctx.Request.Header.Peek("X-Forwarded-For")
-	if xForwardedFor != nil {
-		requestIP, err := retrieveForwardedIP(string(xForwardedFor))
-		if err == nil {
-			return requestIP
+	/*
+		cfip := ctx.Request.Header.Peek("CF-Connecting-IP")
+		if cfip != nil {
+			return string(cfip)
 		}
+	*/
+	xff := ctx.Request.Header.Peek("X-Forwarded-For")
+	if xff != nil {
+
+		commaIndex := bytes.IndexByte(xff, ',')
+		if commaIndex != -1 {
+			return string(bytes.TrimSpace(xff[:commaIndex]))
+		}
+		return string(bytes.TrimSpace(xff))
 	}
 	/*
 			if ip, err := fromForwardedHeaders(ctx); err == nil {

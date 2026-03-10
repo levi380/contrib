@@ -1,0 +1,150 @@
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+name: decimal
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [oldstable, stable]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: false
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Verify code formatting
+        run: gofmt -s -w . && git diff --exit-code
+
+      - name: Verify dependency consistency
+        run: go get -u -t . && go mod tidy && git diff --exit-code
+
+      - name: Verify generated code
+        run: go generate ./... && git diff --exit-code
+
+      - name: Verify potential issues
+        uses: golangci/golangci-lint-action@v6
+
+      - name: Run tests with coverage
+        run: go test -race -shuffle=on -coverprofile="coverage.txt" -covermode=atomic ./...
+
+      - name: Upload test coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.go-version == 'stable'
+        uses: codecov/codecov-action@v4
+
+  fuzz:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run fuzzing for string parsing
+        run: go test -fuzztime 20s -fuzz ^FuzzParse$
+
+      - name: Run fuzzing from BSON unmarshaling
+        run: go test -fuzztime 20s -fuzz ^FuzzBSON$
+
+      - name: Run fuzzing for string conversion
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_String_Parse$
+
+      - name: Run fuzzing for IEEE 754-2008 conversion
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_IEEE_ParseIEEE$
+
+      - name: Run fuzzing for binary-text interoperability
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Binary_Text$
+
+      - name: Run fuzzing for text-binary interoperability
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Text_Binary$
+
+      - name: Run fuzzing for float64 conversion
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Float64_NewFromFloat64$
+
+      - name: Run fuzzing for int64 conversion
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Int64_NewFromInt64$
+
+      - name: Run fuzzing for addition
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Add$
+
+      - name: Run fuzzing for multiplication
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Mul$
+
+      - name: Run fuzzing for fused multiply-addition
+        run: go test -fuzztime 60s -fuzz ^FuzzDecimal_AddMul$
+
+      - name: Run fuzzing for fused multiply-addition
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Add_AddMul$
+
+      - name: Run fuzzing for fused multiply-addition
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Mul_AddMul$
+
+      - name: Run fuzzing for summation
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Add_Sum$
+
+      - name: Run fuzzing for product
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Mul_Prod$
+
+      - name: Run fuzzing for division
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Quo$
+
+      - name: Run fuzzing for fused quotient-addition
+        run: go test -fuzztime 60s -fuzz ^FuzzDecimal_AddQuo$
+
+      - name: Run fuzzing for fused quotient-addition
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Add_AddQuo$
+
+      - name: Run fuzzing for fused quotient-addition
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Quo_AddQuo$
+
+      - name: Run fuzzing for integer division and remainder
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_QuoRem$
+
+      - name: Run fuzzing for square root and integer power
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Sqrt_PowInt$
+
+      - name: Run fuzzing for square root and power
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Pow_Sqrt$
+
+      - name: Run fuzzing for power and integer power
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Pow_PowInt$
+
+      - name: Run fuzzing for exponential and power
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Pow_Exp$
+
+      - name: Run fuzzing for exponential and logarithm
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimalp_Log_Exp$
+
+      - name: Run fuzzing for shifted exponential and exponential
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Expm1_Exp$
+
+      - name: Run fuzzing for shifted logarithm and logarithm
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Log1p_Log$
+
+      - name: Run fuzzing for comparison
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Cmp$
+
+      - name: Run fuzzing for comparison and subtraction
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Sub_Cmp$
+
+      - name: Run fuzzing for constructor
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_New$
+
+      - name: Run fuzzing for trimming
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Trim$
+
+      - name: Run fuzzing for padding
+        run: go test -fuzztime 20s -fuzz ^FuzzDecimal_Pad$

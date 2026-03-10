@@ -19,3 +19,7 @@ func (d Decimal) GreaterThan(e Decimal) bool {
 func (d Decimal) LessThanOrEqual(e Decimal) bool {
 	return d.Cmp(e) <= 0
 }
+
+func (d Decimal) GreaterThanOrEqual(e Decimal) bool {
+	return d.Cmp(e) >= 0
+}

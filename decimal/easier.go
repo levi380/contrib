@@ -1,5 +1,11 @@
 package decimal
 
+func (d Decimal) Sub1(e Decimal) Decimal {
+	val, _ := d.Sub(e)
+	return val
+}
+}
+
 func (d Decimal) Mul1(e Decimal) Decimal {
 	val, _ := d.Mul(e)
 	return val

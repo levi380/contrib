@@ -15,3 +15,7 @@ func (d Decimal) Div(e Decimal) Decimal {
 func (d Decimal) GreaterThan(e Decimal) bool {
 	return d.Cmp(e) == 1
 }
+
+func (d Decimal) LessThanOrEqual(e Decimal) bool {
+	return d.Cmp(e) <= 0
+}

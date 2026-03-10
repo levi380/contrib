@@ -1,6 +1,6 @@
 package decimal
 
-func (d Decimal) Mul1(e Decimal) (Decimal, error) {
+func (d Decimal) Mul1(e Decimal) Decimal {
 	val, _ := d.Mul(e)
 	return val
 }

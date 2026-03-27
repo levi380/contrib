@@ -13,7 +13,6 @@ import (
 
 var (
 	prefix  = "t:"
-	rr      *frand.RNG
 	ctx     = context.Background()
 	client  *redis.Client
 	expires [3]time.Duration
@@ -21,7 +20,6 @@ var (
 
 func New(reddb *redis.Client) {
 
-	rr = frand.New()
 	client = reddb
 	expires[0] = time.Duration(30) * time.Minute
 	expires[1] = time.Duration(30) * time.Minute
@@ -34,7 +32,7 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 
 	uuid := fmt.Sprintf("T:%s:%s", name, device)
 
-	key := fmt.Sprintf("%x", rr.Entropy128())
+	key := fmt.Sprintf("%x", frand.Entropy128())
 	val, err := client.Get(ctx, uuid).Result()
 
 	key = prefix + key
@@ -180,7 +178,7 @@ func Del(fctx *fasthttp.RequestCtx) error {
 func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", uid)
-	key := fmt.Sprintf("%x", rr.Entropy128())
+	key := fmt.Sprintf("%x", frand.Entropy128())
 
 	val, err := client.Get(ctx, uuid).Result()
 

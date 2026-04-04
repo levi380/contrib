@@ -8,7 +8,6 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/valyala/fasthttp"
-	"lukechampine.com/frand"
 )
 
 var (
@@ -32,7 +31,13 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 
 	uuid := fmt.Sprintf("T:%s:%s", name, device)
 
-	key := fmt.Sprintf("%x", frand.Entropy128())
+	sid, err := uuid.NewV7()
+	if err != nil {
+		fmt.Printf("session.Set uuid.NewV7生成失败: %v", err)
+		return "", err
+	}
+
+	key := sid.String()
 	val, err := client.Get(ctx, uuid).Result()
 
 	key = prefix + key
@@ -178,7 +183,14 @@ func Del(fctx *fasthttp.RequestCtx) error {
 func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
 	uuid := fmt.Sprintf("TI:%s", uid)
-	key := fmt.Sprintf("%x", frand.Entropy128())
+
+	sid, err := uuid.NewV7()
+	if err != nil {
+		fmt.Printf("session.Set uuid.NewV7生成失败: %v", err)
+		return "", err
+	}
+
+	key := sid.String()
 
 	val, err := client.Get(ctx, uuid).Result()
 

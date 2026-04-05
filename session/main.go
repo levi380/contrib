@@ -29,7 +29,7 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 
 	device := string(fctx.Request.Header.Peek("d"))
 
-	uuid := fmt.Sprintf("T:%s:%s", name, device)
+	suid := fmt.Sprintf("T:%s:%s", name, device)
 
 	sid, err := uuid.NewV7()
 	if err != nil {
@@ -38,7 +38,7 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 	}
 
 	key := sid.String()
-	val, err := client.Get(ctx, uuid).Result()
+	val, err := client.Get(ctx, suid).Result()
 
 	key = prefix + key
 
@@ -55,7 +55,7 @@ func Set(fctx *fasthttp.RequestCtx, loc *time.Location, ty int, name string, see
 
 	pipe.PFAdd(ctx, ckey, name)
 	pipe.ExpireXX(ctx, ckey, time.Duration(48)*time.Hour)
-	pipe.Set(ctx, uuid, key, 720*time.Hour)
+	pipe.Set(ctx, suid, key, 720*time.Hour)
 	pipe.Set(ctx, key, name, expires[ty])
 	/*
 		if ty == 0 {
@@ -182,7 +182,7 @@ func Del(fctx *fasthttp.RequestCtx) error {
 
 func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
-	uuid := fmt.Sprintf("TI:%s", uid)
+	suid := fmt.Sprintf("TI:%s", uid)
 
 	sid, err := uuid.NewV7()
 	if err != nil {
@@ -192,7 +192,7 @@ func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
 	key := sid.String()
 
-	val, err := client.Get(ctx, uuid).Result()
+	val, err := client.Get(ctx, suid).Result()
 
 	pipe := client.Pipeline()
 
@@ -200,7 +200,7 @@ func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 		//同一个用户，一个时间段，只能登录一个
 		pipe.Unlink(ctx, val)
 	}
-	pipe.Set(ctx, uuid, key, ttl)
+	pipe.Set(ctx, suid, key, ttl)
 	pipe.Set(ctx, key, value, ttl)
 	_, err = pipe.Exec(ctx)
 

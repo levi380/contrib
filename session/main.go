@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/valyala/fasthttp"
@@ -202,6 +203,33 @@ func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 	}
 	pipe.Set(ctx, suid, key, ttl)
 	pipe.Set(ctx, key, value, ttl)
+	_, err = pipe.Exec(ctx)
+
+	return key, err
+}
+
+func AgencySet(uid string, multiple bool, ttl time.Duration) (string, error) {
+
+	suid := fmt.Sprintf("TI:%s", uid)
+
+	sid, err := uuid.NewV7()
+	if err != nil {
+		fmt.Printf("AgencySet.Set uuid.NewV7生成失败: %v", err)
+		return "", err
+	}
+
+	key := sid.String()
+
+	val, err := client.Get(ctx, suid).Result()
+
+	pipe := client.Pipeline()
+
+	if !multiple && err != redis.Nil {
+		//同一个用户，一个时间段，只能登录一个
+		pipe.Unlink(ctx, val)
+	}
+	pipe.Set(ctx, suid, key, ttl)
+	pipe.Set(ctx, key, uid, ttl)
 	_, err = pipe.Exec(ctx)
 
 	return key, err

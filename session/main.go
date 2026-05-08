@@ -208,9 +208,26 @@ func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 	return key, err
 }
 
+func AgencyLogoutAll(uid string) error {
+
+	suid := fmt.Sprintf("AT:%s", uid)
+
+	keys, err := client.SMembers(ctx, suid).Result()
+	if err != nil {
+		return err
+	}
+
+	pipe := client.Pipeline()
+	pipe.Unlink(ctx, keys...)
+	pipe.Unlink(ctx, suid)
+	pipe.Exec(ctx)
+
+	return nil
+}
+
 func AgencySet(uid string, multiple bool, ttl time.Duration) (string, error) {
 
-	suid := fmt.Sprintf("TI:%s", uid)
+	suid := fmt.Sprintf("AT:%s", uid)
 
 	sid, err := uuid.NewV7()
 	if err != nil {
@@ -220,16 +237,20 @@ func AgencySet(uid string, multiple bool, ttl time.Duration) (string, error) {
 
 	key := sid.String()
 
-	val, err := client.Get(ctx, suid).Result()
-
-	pipe := client.Pipeline()
-
 	if !multiple && err != redis.Nil {
 		//同一个用户，一个时间段，只能登录一个
-		pipe.Unlink(ctx, val)
+		val, err := client.SMembers(ctx, suid).Result()
+		if err == nil && len(val) > 0 {
+			client.Unlink(ctx, val...)
+		}
 	}
-	pipe.Set(ctx, suid, key, ttl)
+
+	pipe := client.Pipeline()
+	//pipe.Set(ctx, suid, key, ttl)
+	pipe.SAdd(ctx, suid, key)
+	pipe.Expire(ctx, suid, ttl+(24*time.Hour))
 	pipe.Set(ctx, key, uid, ttl)
+	pipe.SAdd(ctx, key+"", key)
 	_, err = pipe.Exec(ctx)
 
 	return key, err

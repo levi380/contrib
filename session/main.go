@@ -210,7 +210,7 @@ func AdminSet(value []byte, uid string, ttl time.Duration) (string, error) {
 
 func AgencyLogoutAll(uid string) error {
 
-	suid := fmt.Sprintf("AT:%s", uid)
+	suid := fmt.Sprintf("TA:%s", uid)
 
 	keys, err := client.SMembers(ctx, suid).Result()
 	if err != nil {
@@ -227,7 +227,7 @@ func AgencyLogoutAll(uid string) error {
 
 func AgencySet(uid string, multiple bool, ttl time.Duration) (string, error) {
 
-	suid := fmt.Sprintf("AT:%s", uid)
+	suid := fmt.Sprintf("TA:%s", uid)
 
 	sid, err := uuid.NewV7()
 	if err != nil {

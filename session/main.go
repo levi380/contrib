@@ -250,7 +250,6 @@ func AgencySet(uid string, multiple bool, ttl time.Duration) (string, error) {
 	pipe.SAdd(ctx, suid, key)
 	pipe.Expire(ctx, suid, ttl+(24*time.Hour))
 	pipe.Set(ctx, key, uid, ttl)
-	pipe.SAdd(ctx, key+"", key)
 	_, err = pipe.Exec(ctx)
 
 	return key, err
